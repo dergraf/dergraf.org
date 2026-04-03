@@ -1,8 +1,6 @@
 +++
 title = "First notes: experiments, control planes, and a bit of AI"
 date = 2026-04-03
-[taxonomies]
-tags = ["envoy", "control-plane", "ai", "elixir", "erlang", "notes"]
 +++
 
 ## First notes: experiments, control planes, and a bit of AI
