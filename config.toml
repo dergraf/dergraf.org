@@ -1,6 +1,6 @@
 # dergraf.org
 
-base_url = "https://dergraf.org"
+base_url = "https://www.dergraf.org"
 title = "André Graf"
 description = "Senior Software engineer exploring API infrastructure, distributed systems, and developer tooling. Elixir, Rust, Erlang/OTP."
 default_language = "en"
