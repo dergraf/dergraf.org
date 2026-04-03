@@ -3,8 +3,6 @@ title = "First notes: experiments, control planes, and a bit of AI"
 date = 2026-04-03
 +++
 
-## First notes: experiments, control planes, and a bit of AI
-
 This is the first post on this small site.
 
 The goal here is simple: to share some of the things I’m currently building, exploring, and occasionally struggling with. Most of my work these days revolves around **Envoy Proxy**, control planes, and the question of how we can make complex systems easier to reason about and operate.
