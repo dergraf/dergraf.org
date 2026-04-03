@@ -4,15 +4,8 @@
 
 {% block content %}
 <section class="hero">
-  <div class="hero-intro">
-    <img src="/profile.png" alt="Andre Graf" class="avatar" width="96" height="96" loading="eager">
-    <div>
-      <h1>André Graf <span class="handle">@dergraf</span></h1>
-      <p class="location">{{ config.extra.location }}</p>
-    </div>
-  </div>
-
   <div class="prose">
+    <img src="/profile.png" alt="André Graf" class="avatar" width="96" height="96" loading="eager">
     {{ section.content | safe }}
   </div>
 </section>
