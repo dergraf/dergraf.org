@@ -1,0 +1,36 @@
+# dergraf.org
+
+base_url = "https://dergraf.org"
+title = "André Graf"
+description = "Senior Software engineer exploring API infrastructure, distributed systems, and developer tooling. Elixir, Rust, Erlang/OTP."
+default_language = "en"
+compile_sass = true
+minify_html = true
+build_search_index = false
+generate_feeds = true
+feed_filenames = ["atom.xml"]
+
+[markdown]
+highlight_code = true
+highlight_theme = "base16-ocean-dark"
+smart_punctuation = true
+
+[slugify]
+paths = "on"
+taxonomies = "on"
+anchors = "on"
+
+[extra]
+name = "André Graf"
+handle = "dergraf"
+location = "Switzerland"
+github = "https://github.com/dergraf"
+linkedin = "https://www.linkedin.com/in/andregraf/"
+
+[[extra.nav]]
+name = "Notes"
+url = "/notes/"
+
+[[extra.nav]]
+name = "Projects"
+url = "/projects/"

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="{{ lang | default(value='en') }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ config.title }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ config.description }}{% endblock %}">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="alternate" type="application/atom+xml" title="{{ config.title }}" href="/atom.xml">
+
+  <script>
+    (function() {
+      var s = localStorage.getItem('theme');
+      if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/" class="site-name">dergraf.org</a>
+      <div class="nav-links">
+        {% for item in config.extra.nav %}
+        <a href="{{ item.url }}"{% if current_path is starting_with(item.url) and item.url != "/" %} class="active"{% elif current_path == "/" and item.url == "/" %} class="active"{% endif %}>{{ item.name }}</a>
+        {% endfor %}
+        <button id="theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
+          <span class="icon-sun">&#9788;</span>
+          <span class="icon-moon">&#9790;</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <p>&copy; {{ now() | date(format="%Y") }} André Graf &middot;
+      <a href="{{ config.extra.github }}">GitHub</a> &middot;
+      <a href="{{ config.extra.linkedin }}">LinkedIn</a> &middot;
+      <a href="/atom.xml">Feed</a>
+    </p>
+  </footer>
+
+  <script>
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+      var d = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', d ? 'dark' : 'light');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ section.title }} — {{ config.title }}{% endblock %}
+{% block description %}{{ section.description }}{% endblock %}
+
+{% block content %}
+<section>
+  <h1>{{ section.title }}</h1>
+  {% if section.description %}
+  <p class="section-desc">{{ section.description }}</p>
+  {% endif %}
+
+  {% if paginator %}
+    {% set pages = paginator.pages %}
+  {% else %}
+    {% set pages = section.pages %}
+  {% endif %}
+
+  {% if pages | length > 0 %}
+
+  {% if section.path is starting_with("/notes") %}
+  {# Notes: date + title #}
+  <ul class="note-list">
+    {% for page in pages %}
+    <li>
+      <time datetime="{{ page.date }}">{{ page.date | date(format="%Y-%m-%d") }}</time>
+      <a href="{{ page.permalink }}">{{ page.title }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  {# Projects: title + description #}
+  <ul class="project-list">
+    {% for page in pages %}
+    <li>
+      <a href="{{ page.extra.url | default(value=page.permalink) }}">{{ page.title }}</a>
+      {% if page.extra.language is defined %}
+      <span class="lang">{{ page.extra.language }}</span>
+      {% endif %}
+      <p>{{ page.description }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if paginator %}
+  <nav class="pagination">
+    {% if paginator.previous %}<a href="{{ paginator.previous }}">&larr; Newer</a>{% endif %}
+    <span>{{ paginator.current_index }}/{{ paginator.number_pagers }}</span>
+    {% if paginator.next %}<a href="{{ paginator.next }}">Older &rarr;</a>{% endif %}
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <p class="empty">Nothing here yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

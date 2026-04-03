@@ -1,0 +1,17 @@
+# Build output
+public/
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary
+.cache/
+tmp/
