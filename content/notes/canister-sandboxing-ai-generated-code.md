@@ -105,13 +105,13 @@ Canister stacks several Linux isolation mechanisms:
 1. **User namespaces** -- the sandboxed process maps to UID 0 inside but has no real host privileges.
 2. **Mount namespace + pivot_root** -- ephemeral tmpfs root, only explicitly allowed paths bind-mounted read-only.
 3. **PID namespace** -- the sandbox cannot see or signal host processes.
-4. **Network namespace + slirp4netns** -- in filtered mode, only pre-resolved whitelisted domains are reachable.
+4. **Network namespace + pasta** -- in filtered mode, only pre-resolved whitelisted domains are reachable. Port forwarding (`-p 8080:80`) lets you expose specific sandbox ports on the host.
 5. **Seccomp BPF** -- default-deny syscall filter. ~170 syscalls allowed; everything else returns EPERM (or KILL_PROCESS in strict mode).
 6. **Seccomp USER_NOTIF supervisor** -- intercepts `connect()`, `clone()`, `socket()`, and `execve()` to enforce argument-level policies from the parent process.
 7. **Cgroups v2** -- optional memory and CPU limits.
 8. **/proc hardening** -- sensitive paths masked, `/proc/sys` read-only.
 
-The design philosophy is fail-closed: if isolation cannot be established, the sandbox refuses to start. No silent degradation unless you explicitly opt in with `--allow-degraded`. There is also a `--strict` mode intended for CI that makes all degradation fatal and switches seccomp to KILL_PROCESS.
+The design philosophy is fail-closed: if isolation cannot be established, the sandbox refuses to start. There are only two operational modes -- normal (denied syscalls return EPERM) and strict (`--strict`, denied syscalls kill the process immediately). No silent degradation, no halfway states.
 
 None of this is novel individually -- these are well-known Linux primitives. The interesting part (to me) is the composition: combining them behind a simple CLI with TOML-based policies that are easy to read and share.
 
@@ -139,3 +139,19 @@ This is still early. Some things I'm actively thinking about:
 - **Integration with AI tools.** The natural next step would be AI coding assistants automatically running generated code inside a sandbox. That requires some cooperation from the tool side.
 
 If any of this is interesting to you, the code is at [github.com/dergraf/canister](https://github.com/dergraf/canister). It is Apache-2.0 licensed. Issues and ideas welcome.
+
+---
+
+## Editorial
+
+*Updated 2026-04-12.* Since the original post, the networking stack and security model have changed substantially:
+
+- **Replaced slirp4netns with pasta.** The original post described slirp4netns as the network backend. Canister now uses [pasta](https://passt.top/) (from the passt project) exclusively. pasta mirrors the host's real IP configuration into the sandbox namespace instead of using a synthetic 10.0.2.x subnet, and is the default backend for Podman and rootless Docker. The switch also required solving a non-trivial namespace chicken-and-egg problem: pasta must join the child's user namespace first (`setns(CLONE_NEWUSER)`) to acquire `CAP_SYS_ADMIN` over the child's network namespace, then join the network namespace. The child calls `prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY)` to allow pasta (a sibling process) to access `/proc/<child>/ns/*` despite Yama ptrace restrictions.
+
+- **Added port forwarding.** The `-p` / `--port` flag supports Docker-compatible syntax (`-p [ip:]hostPort:containerPort[/protocol]`), making it straightforward to expose sandbox services on the host: `can run -p 8080:80 -r my-recipe -- my-server`.
+
+- **Removed degraded mode.** The original post mentioned `--allow-degraded`. This has been removed entirely. Canister now has exactly two modes: normal (SECCOMP_RET_ERRNO) and strict (SECCOMP_RET_KILL_PROCESS). All setup failures are fatal in both modes -- the sandbox runs at full strength or not at all.
+
+- **Removed shared network namespaces.** The `--net-name` feature for sharing a network namespace across sandbox invocations was removed. Each sandbox gets its own isolated network namespace. Simpler model, smaller attack surface.
+
+- **AppArmor profile management via `can setup`.** Ubuntu 24.04+ blocks mount operations inside unprivileged user namespaces via AppArmor. Rather than shipping a static override file, Canister now generates and manages a two-profile AppArmor configuration: `canister` (full permissions for the binary) and `canister_sandboxed` (maximally restricted for sandboxed commands). `can setup` installs the profile, detects stale profiles after upgrades, and supports `--force` for reinstallation. Trusted helper binaries (pasta, apparmor_parser) run unconfined via specific `ux` rules that take precedence over the catch-all exec transition.
